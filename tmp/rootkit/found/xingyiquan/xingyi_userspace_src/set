@@ -1,4 +1,0 @@
-gcc -o xingyi_bindshell xingyi_bindshell.c -Wall
-gcc -o xingyi_reverse_shell xingyi_reverse_shell.c -Wall
-
-
