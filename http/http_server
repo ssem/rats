@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+import os
+import socket
+import argparse
+from multiprocessing import Process
+
+
+def run_forever():
+    return True
+
+def _server(files, callback, port):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind(('', port))
+    s.listen(0)
+    while run_forever():
+        conn, addr = s.accept()
+        print 'received request from %s' % addr[0]
+        data = conn.recv(1024)
+        for f in files:
+            if 'get %s' % f in data.lower():
+                try:
+                    conn.sendall('HTTP/1.0 200 OK\r\n\r\n' + files[f])
+                    print 'sent %s' % f
+                    if callable(callback):
+                        callback(f)
+                except Exception as e:
+                    pass
+        conn.close()
+    s.close()
+
+
+class Http_Server:
+    def __init__(self, port=8080):
+        self.port = int(port)
+        self._process = None
+
+    def serve(self, files={'filename': 'content'}, callback=None):
+        '''
+            files: dictionary of filenames and the content
+
+            callback: function that accepts a filename as a parameter
+        '''
+        self._process = Process(target=_server,
+            args=(files, callback, self.port))
+        self._process.start()
+
+    def shutdown(self):
+        if self._process is not None:
+            self._process.terminate()
+            self._process = None
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file', help='file to serve')
+    parser.add_argument('port', help='port to server on')
+    args = parser.parse_args()
+    f = os.path.basename(args.file)
+    print 'serving %s on port %s' % (f, args.port)
+    http_server = Http_Server(args.port)
+    http_server.serve({'/%s' % f:open(args.file, 'rb').read()})
