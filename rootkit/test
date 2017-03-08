@@ -1,0 +1,52 @@
+#!/bin/bash
+sudo insmod rt.ko
+sudo lsmod | grep rt
+echo -e "\nMODULE INSERTED [ENTER]"
+read test
+
+dmesg | tail -n 10
+echo -e "\nDMESG [ENTER]"
+read test
+
+ls /proc/ioinfo
+echo -e "\nMODULE FILE EXISTS [ENTER]"
+read test
+
+cat /proc/ioinfo
+echo -e "\nREAD [ENTER]"
+read test
+
+echo "help" > /proc/ioinfo
+echo -e "\nWRITE help [ENTER]"
+read test
+
+cat /proc/ioinfo
+echo -e "\nREAD [ENTER]"
+read test
+
+#echo "ro" > /proc/ioinfo
+#echo -e "\nWRITE ro [ENTER]"
+#read test
+
+#echo $UID
+#echo -e "\nUID [ENTER]"
+#read test
+
+echo "mh" > /proc/ioinfo
+echo -e "\nWRITE mh [ENTER]"
+read test
+
+sudo lsmod | grep rt
+echo -e "\nLSMOD [ENTER]"
+read test
+
+echo "ms" > /proc/ioinfo
+echo -e "\nWRITE ms [ENTER]"
+read test
+
+sudo lsmod | grep rt
+echo -e "\nLSMOD [ENTER]"
+read test
+
+sudo rmmod rt
+sudo lsmod | grep rt

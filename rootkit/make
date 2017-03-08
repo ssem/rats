@@ -1,0 +1,18 @@
+#!/bin/bash
+
+make clean
+clear
+make 2> /tmp/error
+ERRORS=$(grep error /tmp/error)
+if [ "x$ERRORS" != "x" ]; then
+    echo "############################"
+    echo "#          ERRORS          #"
+    echo "############################"
+    echo $ERRORS
+    echo "############################"
+else
+    echo "############################"
+    echo "#          SUCCESS         #"
+    echo "############################"
+    ls -alh
+fi
