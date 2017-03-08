@@ -1,0 +1,1 @@
+cmd_/home/ssem/work/libroot/keylog/mine.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/ssem/work/libroot/keylog/mine.ko /home/ssem/work/libroot/keylog/mine.o /home/ssem/work/libroot/keylog/mine.mod.o
