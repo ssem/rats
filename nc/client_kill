@@ -1,7 +1,0 @@
-#!/bin/bash
-sudo killall stunnel
-sudo killall client
-sudo killall netcat
-sudo killall nc
-rm client.conf
-rm client.psk

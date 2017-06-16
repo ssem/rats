@@ -1,7 +1,0 @@
-#!/bin/bash
-sudo killall stunnel
-sudo killall backdoor
-sudo killall netcat
-sudo killall nc
-rm server.conf
-rm server.psk

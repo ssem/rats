@@ -1,6 +1,0 @@
-#!/bin/bash
-
-make clean
-make
-echo -e "./netcat -v -l -p 1234\n"
-./netcat -v -l -p 1234
