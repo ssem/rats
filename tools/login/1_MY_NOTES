@@ -1,0 +1,10 @@
+capture password used for auth
+
+login.c ->
+    Linux_PAM-1.2.1 ->
+    libpam/pam_auth.c -> pam_authenticate() ->
+            libpam/pam_dispatch.c ->_pam_dispatch()
+                modules/pam_unix_auth.c h->func()
+                    _unix_read_password() -> support.c 
+                    _unix_verify_password -> support.c
+                    retval = _unix_verify_password(pamh, name, p, ctrl); 

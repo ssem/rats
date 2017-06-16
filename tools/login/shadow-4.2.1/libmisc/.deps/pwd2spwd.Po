@@ -1,0 +1,5 @@
+pwd2spwd.o: pwd2spwd.c /usr/include/stdc-predef.h ../config.h
+
+/usr/include/stdc-predef.h:
+
+../config.h:

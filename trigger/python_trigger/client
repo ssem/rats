@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+import time
+import struct
+import socket
+import select
+import random
+
+
+class Send:
+    def __init__(self):
+        try:
+            self.s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
+            self.s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+            self.s.setblocking(0)
+        except socket.error:
+            exit("Socket could not be created")
+
+    def _create_ip_header(self, source_ip, dest_ip,
+            ihl=5, version=4, tos=0, tot_len=40, p_id=54321, frag_off=0, ttl=128,
+            protocol=socket.IPPROTO_TCP, check=10):
+
+        saddr = socket.inet_aton(source_ip)
+        daddr = socket.inet_aton(dest_ip)
+        ihl_version = (version << 4) + ihl
+        return struct.pack('!BBHHHBBH4s4s', ihl_version, tos, tot_len, p_id, frag_off,
+                                            ttl, protocol, check, saddr, daddr)
+
+    def _create_tcp_header(self, source_ip, dest_ip, source_port, dest_port,
+            seq=0, ack_seq=0, doff=5, fin=0, syn=0, rst=1, psh=0, ack=0,
+            urg=0, window=5840, protocol=socket.IPPROTO_TCP, check=0, urg_ptr=0):
+
+        window = socket.htons(window)
+        offset_res=(doff << 4) + 0
+        tcp_flags = fin + (syn << 1) + (rst << 2) + (psh <<3) + (ack << 4) + (urg << 5)
+        tcp_header = struct.pack('!HHLLBBHHH', source_port, dest_port, seq, ack_seq,
+                                               offset_res, tcp_flags, window, check, urg_ptr)
+        source_address = socket.inet_aton(source_ip)
+        dest_address = socket.inet_aton(dest_ip)
+        tcp_length = len(tcp_header)
+        psh = struct.pack('!4s4sBBH' ,source_address, dest_address, 0, protocol, tcp_length);
+        psh += tcp_header;
+        s = 0
+        for i in range(0, len(psh), 2):
+            w = (ord(psh[i]) << 8) + (ord(psh[i+1]) )
+            s = s + w
+        s = (s>>16) + (s & 0xffff);
+        check = ~s & 0xffff
+        return struct.pack('!HHLLBBHHH', source_port, dest_port, seq, ack_seq, offset_res,
+                                         tcp_flags, window, check, urg_ptr)
+    def send_secret_packet(self, src_ip, dest_ip, dest_port):
+        time_stamp = int(time.time() /10000) % 99
+        src_port = random.randint(45124,59801)
+        p_id = (src_port ^ 19058) - 31
+        ip_header = self._create_ip_header(src_ip, dest_ip, p_id=p_id)
+        tcp_header = self._create_tcp_header(src_ip, dest_ip, src_port, dest_port, seq=time_stamp)
+        try:
+            self.s.sendto(ip_header + tcp_header, (dest_ip, dest_port))
+            self.s.shutdown(socket.SHUT_RD)
+        except:pass
+
+
+if __name__ == "__main__":
+    send = Send()
+    send.send_secret_packet("127.0.0.1", "127.0.0.1", 8080)

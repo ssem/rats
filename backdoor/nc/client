@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ $# -ne 2 ];
+then
+    echo -e "\n\tUsage: <remote-ip> <remote-port>\n"
+    exit -1
+fi
+
+NETCAT=$(which nc)
+REMOTE_IP=$1
+REMOTE_PORT=$2
+REMOTE_PASSWD="test1:oaP4EishaeSaishei6rio6xeeph3az"
+LOCAL_PORT=43261
+
+echo "$REMOTE_PASSWD" > client.psk
+echo "[PSK client 1]" > client.conf
+echo "client = yes" >> client.conf
+echo "accept = 127.0.0.1:$LOCAL_PORT" >> client.conf
+echo "connect = $REMOTE_IP:$REMOTE_PORT" >> client.conf
+echo "PSKsecrets = client.psk" >> client.conf
+
+stunnel client.conf
+$NETCAT 127.0.0.1 $LOCAL_PORT

@@ -1,0 +1,5 @@
+login_nopam.o: login_nopam.c /usr/include/stdc-predef.h ../config.h
+
+/usr/include/stdc-predef.h:
+
+../config.h:

@@ -1,0 +1,4 @@
+src/netcat.c - line 493
+    when socket connects line 493 is triggered
+    add extra code so a special string is required before you get shell
+    add bash script to keep the service up after disconnect
